@@ -1,8 +1,6 @@
 package com.playtomic.tests.wallet.domain.entity;
 
 import lombok.Getter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 

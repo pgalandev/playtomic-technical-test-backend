@@ -3,7 +3,7 @@ package com.playtomic.tests.wallet.client.rest.impl;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.playtomic.tests.wallet.client.rest.StripeRestClient;
 import com.playtomic.tests.wallet.config.client.stripe.StripeClientConfiguration.StripeEndpoints;
-import com.playtomic.tests.wallet.domain.Payment;
+import com.playtomic.tests.wallet.domain.external.stripe.Payment;
 import com.playtomic.tests.wallet.domain.exception.StripeAmountTooSmallException;
 import com.playtomic.tests.wallet.domain.exception.StripeServiceException;
 import lombok.NonNull;

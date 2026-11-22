@@ -1,7 +1,7 @@
 package com.playtomic.tests.wallet.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.playtomic.tests.wallet.domain.Payment;
+import com.playtomic.tests.wallet.domain.external.stripe.Payment;
 import com.playtomic.tests.wallet.domain.exception.StripeServiceException;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;

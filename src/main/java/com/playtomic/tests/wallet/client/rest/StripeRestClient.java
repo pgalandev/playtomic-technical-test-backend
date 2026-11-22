@@ -1,6 +1,6 @@
 package com.playtomic.tests.wallet.client.rest;
 
-import com.playtomic.tests.wallet.domain.Payment;
+import com.playtomic.tests.wallet.domain.external.stripe.Payment;
 import com.playtomic.tests.wallet.domain.exception.StripeServiceException;
 
 import java.math.BigDecimal;

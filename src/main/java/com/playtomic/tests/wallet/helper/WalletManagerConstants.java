@@ -8,4 +8,6 @@ public final class WalletManagerConstants {
      * Mongo collections
      */
     public static final String WALLET_COLLECTION = "wallet_mc_wallets";
+
+    public static final String TRANSACTION_COLLECTION = "wallet_mc_transactions";
 }

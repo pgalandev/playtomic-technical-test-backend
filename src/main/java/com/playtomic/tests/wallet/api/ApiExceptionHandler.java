@@ -1,5 +1,6 @@
 package com.playtomic.tests.wallet.api;
 
+import com.playtomic.tests.wallet.domain.exception.TopUpNotFoundException;
 import com.playtomic.tests.wallet.domain.exception.WalletAlreadyExistsException;
 import com.playtomic.tests.wallet.domain.exception.WalletNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(WalletNotFoundException.class)
     ProblemDetail handle(WalletNotFoundException e) {
         return ProblemTypes.problem(HttpStatus.NOT_FOUND, "wallet-not-found", "Wallet not found", e.getMessage());
+    }
+
+    @ExceptionHandler(TopUpNotFoundException.class)
+    ProblemDetail handle(TopUpNotFoundException e) {
+        return ProblemTypes.problem(HttpStatus.NOT_FOUND, "top-up-not-found", "Top-up not found", e.getMessage());
     }
 
     public static final class ProblemTypes {

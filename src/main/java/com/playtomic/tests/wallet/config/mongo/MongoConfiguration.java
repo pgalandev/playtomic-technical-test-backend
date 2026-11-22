@@ -9,11 +9,13 @@ import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Configuration
+@EnableTransactionManagement
 public class MongoConfiguration {
 
     @Bean

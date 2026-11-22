@@ -1,9 +1,11 @@
-package com.playtomic.tests.wallet.domain;
+package com.playtomic.tests.wallet.domain.external.stripe;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 import lombok.NonNull;
 
+@Getter
 public class Payment {
 
     @NonNull
