@@ -1,13 +1,21 @@
 spring.profiles.active: develop
 server:
   port: 8090
+spring:
+  data.mongodb:
+    auto-index-creation: true
+  mvc.problemdetails.enabled: true
+stripe:
+  connect-timeout: 2s
+  read-timeout: 5s
 ---
 spring.config.activate.on-profile: develop
 spring:
   data.mongodb:
-    uri: mongodb://localhost:27017/playtomic
+    uri: mongodb://localhost:27017/playtomic?replicaSet=rs0
 stripe.simulator.charges-uri: https://sandbox.playtomic.io/v1/stripe-simulator/charges
 stripe.simulator.refunds-uri: https://sandbox.playtomic.io/v1/stripe-simulator/payments/{payment_id}/refunds
+wallet.security.jwt-secret: dev-only-secret-dev-only-secret-dev-only-secret
 ---
 spring.config.activate.on-profile: test
 spring:
@@ -15,5 +23,9 @@ spring:
     host: localhost
     port: 0
     database: playtomic
+de.flapdoodle.mongodb.embedded:
+  version: 7.0.2
+  storage.repl-set-name: rs0
 stripe.simulator.charges-uri: http://localhost:9999
 stripe.simulator.refunds-uri: http://localhost:9999
+wallet.security.jwt-secret: test-secret-test-secret-test-secret-test-secret

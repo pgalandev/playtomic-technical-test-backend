@@ -1,6 +1,8 @@
 package com.playtomic.tests.wallet.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.playtomic.tests.wallet.domain.Payment;
+import com.playtomic.tests.wallet.domain.exception.StripeServiceException;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +19,10 @@ import java.net.URI;
  *
  * A real implementation would call to String using their API/SDK.
  * This dummy implementation throws an error when trying to charge less than 10€.
+ *
+ * @deprecated Use {@link com.playtomic.tests.wallet.client.rest.StripeRestClient}, which is WebClient based.
  */
+@Deprecated
 @Service
 public class StripeService {
 
