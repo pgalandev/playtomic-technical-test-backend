@@ -51,8 +51,9 @@ public class WalletController {
                                         @RequestHeader("Idempotency-Key") String idempotencyKey,
                                         @RequestBody TopUpRequest request,
                                         @AuthenticationPrincipal Jwt jwt) {
+        BigDecimal amount = request.validatedAmount();
         Transaction topUp = topUpService.topUp(walletId, jwt.getSubject(), idempotencyKey,
-                new BigDecimal(request.amount().amount()), request.creditCardNumber());
+                amount, request.creditCardNumber());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(topUp.getId())

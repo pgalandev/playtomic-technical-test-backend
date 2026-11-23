@@ -1,6 +1,7 @@
 package com.playtomic.tests.wallet.service;
 
 import com.playtomic.tests.wallet.domain.exception.StripeAmountTooSmallException;
+import com.playtomic.tests.wallet.domain.exception.StripeServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 
@@ -21,5 +22,6 @@ public class StripeRestTemplateResponseErrorHandler implements ResponseErrorHand
         if (response.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {
             throw new StripeAmountTooSmallException();
         }
+        throw new StripeServiceException();
     }
 }

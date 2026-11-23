@@ -8,6 +8,7 @@ spring:
 stripe:
   connect-timeout: 2s
   read-timeout: 5s
+wallet.top-up.min-amount: 10.00
 ---
 spring.config.activate.on-profile: develop
 spring:

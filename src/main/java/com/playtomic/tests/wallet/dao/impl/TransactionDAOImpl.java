@@ -3,6 +3,7 @@ package com.playtomic.tests.wallet.dao.impl;
 import com.mongodb.client.result.UpdateResult;
 import com.playtomic.tests.wallet.dao.TransactionDAO;
 import com.playtomic.tests.wallet.domain.entity.Transaction;
+import com.playtomic.tests.wallet.domain.enums.FailureReason;
 import com.playtomic.tests.wallet.domain.enums.TransactionStatus;
 import com.playtomic.tests.wallet.domain.enums.TransactionType;
 import com.playtomic.tests.wallet.domain.entity.Wallet;
@@ -27,6 +28,7 @@ public class TransactionDAOImpl implements TransactionDAO {
     private static final String WALLET_ID = "walletId";
     private static final String TYPE = "type";
     private static final String STATUS = "status";
+    private static final String FAILURE_REASON = "failureReason";
     private static final String STRIPE_PAYMENT_ID = "data.stripePaymentId";
     private static final String BALANCE = "balance";
     private static final String UPDATED_AT = "updatedAt";
@@ -76,6 +78,24 @@ public class TransactionDAOImpl implements TransactionDAO {
             throw new IllegalStateException("Could not credit wallet " + pendingTopUp.getWalletId());
         }
 
+        return mongoTemplate.findById(pendingTopUp.getId(), Transaction.class);
+    }
+
+    @Override
+    public Transaction fail(Transaction pendingTopUp, FailureReason reason, Instant now) {
+        UpdateResult marked = mongoTemplate.updateFirst(
+                Query.query(Criteria.where(MONGO_ID).is(pendingTopUp.getId())
+                        .and(STATUS).is(TransactionStatus.PENDING)),
+                new Update()
+                        .set(STATUS, TransactionStatus.FAILED)
+                        .set(FAILURE_REASON, reason)
+                        .set(UPDATED_AT, now)
+                        .inc(VERSION, 1),
+                Transaction.class);
+        if (!isSingleUpdate(marked)) {
+            log.error("Top-up {} is no longer PENDING, cannot mark it as FAILED", pendingTopUp.getId());
+            throw new IllegalStateException("Top-up " + pendingTopUp.getId() + " is no longer PENDING");
+        }
         return mongoTemplate.findById(pendingTopUp.getId(), Transaction.class);
     }
 

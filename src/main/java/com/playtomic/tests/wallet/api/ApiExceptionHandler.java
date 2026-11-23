@@ -1,5 +1,8 @@
 package com.playtomic.tests.wallet.api;
 
+import com.playtomic.tests.wallet.domain.exception.AmountTooSmallException;
+import com.playtomic.tests.wallet.domain.exception.InvalidTopUpRequestException;
+import com.playtomic.tests.wallet.domain.exception.PaymentProviderException;
 import com.playtomic.tests.wallet.domain.exception.TopUpNotFoundException;
 import com.playtomic.tests.wallet.domain.exception.WalletAlreadyExistsException;
 import com.playtomic.tests.wallet.domain.exception.WalletNotFoundException;
@@ -26,6 +29,21 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(TopUpNotFoundException.class)
     ProblemDetail handle(TopUpNotFoundException e) {
         return ProblemTypes.problem(HttpStatus.NOT_FOUND, "top-up-not-found", "Top-up not found", e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidTopUpRequestException.class)
+    ProblemDetail handle(InvalidTopUpRequestException e) {
+        return ProblemTypes.problem(HttpStatus.BAD_REQUEST, "validation-error", "Validation error", e.getMessage());
+    }
+
+    @ExceptionHandler(AmountTooSmallException.class)
+    ProblemDetail handle(AmountTooSmallException e) {
+        return ProblemTypes.problem(HttpStatus.UNPROCESSABLE_ENTITY, "amount-too-small", "Amount too small", e.getMessage());
+    }
+
+    @ExceptionHandler(PaymentProviderException.class)
+    ProblemDetail handle(PaymentProviderException e) {
+        return ProblemTypes.problem(HttpStatus.BAD_GATEWAY, "payment-provider-error", "Payment provider error", e.getMessage());
     }
 
     public static final class ProblemTypes {

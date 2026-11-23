@@ -182,6 +182,89 @@ public class TopUpApiIT {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void rejectsInvalidPayloadsWithValidationError() throws Exception {
+        String walletId = createWalletFor("user-1");
+        String[] bodies = {
+                "{\"creditCardNumber\":\"" + CARD + "\"}",
+                body("0", "EUR", CARD), body("-5.00", "EUR", CARD), body("10.123", "EUR", CARD),
+                body("abc", "EUR", CARD), body("25.00", "USD", CARD),
+                "{\"amount\":{\"amount\":\"25.00\"},\"creditCardNumber\":\"" + CARD + "\"}",
+                "{\"amount\":{\"amount\":\"25.00\",\"currency\":\"EUR\"}}"
+        };
+        for (String body : bodies) {
+            mockMvc.perform(post("/api/v1/wallets/" + walletId + "/top-ups")
+                            .header(HttpHeaders.AUTHORIZATION, JwtTestHelper.bearerFor("user-1"))
+                            .header("Idempotency-Key", "k")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.type").value(endsWith("validation-error")));
+        }
+        STRIPE.verify(0, postRequestedFor(anyUrl()));
+        assertThat(mongoTemplate.getCollection(TRANSACTION_COLLECTION).countDocuments()).isZero();
+    }
+
+    @Test
+    void rejectsAmountsBelowTheMinimumWithoutCallingStripe() throws Exception {
+        String walletId = createWalletFor("user-1");
+
+        topUp(walletId, "user-1", "key-1", "9.99")
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(endsWith("amount-too-small")));
+
+        STRIPE.verify(0, postRequestedFor(anyUrl()));
+        assertThat(mongoTemplate.getCollection(TRANSACTION_COLLECTION).countDocuments()).isZero();
+    }
+
+    @Test
+    void failsTheTopUpWhenStripeRejectsTheAmount() throws Exception {
+        String walletId = createWalletFor("user-1");
+        stripeRespondsWith(422);
+
+        topUp(walletId, "user-1", "key-1", "25.00")
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(endsWith("amount-too-small")));
+
+        assertSingleFailedTopUp(walletId, "AMOUNT_TOO_SMALL");
+    }
+
+    @Test
+    void failsTheTopUpOnOtherStripeErrors() throws Exception {
+        String walletId = createWalletFor("user-1");
+        stripeRespondsWith(500);
+
+        topUp(walletId, "user-1", "key-1", "25.00")
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.type").value(endsWith("payment-provider-error")));
+
+        assertSingleFailedTopUp(walletId, "PAYMENT_PROVIDER_ERROR");
+
+        stripeRespondsWith(400);
+        topUp(walletId, "user-1", "key-2", "25.00").andExpect(status().isBadGateway());
+        assertBalance(walletId, "user-1", "0.00");
+    }
+
+    private void assertSingleFailedTopUp(String walletId, String reason) throws Exception {
+        String topUpId = mongoTemplate.getCollection(TRANSACTION_COLLECTION).find().first().get("_id").toString();
+        mockMvc.perform(get("/api/v1/wallets/" + walletId + "/top-ups/" + topUpId)
+                        .header(HttpHeaders.AUTHORIZATION, JwtTestHelper.bearerFor("user-1")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("FAILED"))
+                .andExpect(jsonPath("$.failureReason").value(reason));
+        assertBalance(walletId, "user-1", "0.00");
+    }
+
+    private void stripeRespondsWith(int status) {
+        STRIPE.resetAll();
+        STRIPE.stubFor(WireMock.post(anyUrl()).willReturn(aResponse().withStatus(status)));
+    }
+
+    private static String body(String amount, String currency, String card) {
+        return "{\"amount\":{\"amount\":\"" + amount + "\",\"currency\":\"" + currency
+                + "\"},\"creditCardNumber\":\"" + card + "\"}";
+    }
+
     private ResultActions topUp(String walletId, String user, String key, String amount) throws Exception {
         return mockMvc.perform(post("/api/v1/wallets/" + walletId + "/top-ups")
                 .header(HttpHeaders.AUTHORIZATION, JwtTestHelper.bearerFor(user))
