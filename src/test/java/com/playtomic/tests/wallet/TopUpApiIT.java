@@ -165,7 +165,18 @@ public class TopUpApiIT {
                         .header(HttpHeaders.AUTHORIZATION, JwtTestHelper.bearerFor("user-1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(topUpBody("25.00")))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value(endsWith("validation-error")));
+
+        mockMvc.perform(post("/api/v1/wallets/" + walletId + "/top-ups")
+                        .header(HttpHeaders.AUTHORIZATION, JwtTestHelper.bearerFor("user-1"))
+                        .header("Idempotency-Key", "k")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{not json"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type").value(endsWith("validation-error")));
+
+        topUp(walletId, "user-2", "key-1", "-1").andExpect(status().isNotFound());
 
         STRIPE.verify(0, postRequestedFor(anyUrl()));
         assertThat(mongoTemplate.getCollection(TRANSACTION_COLLECTION).countDocuments()).isZero();

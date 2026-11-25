@@ -32,8 +32,9 @@ public class WalletController {
     private final TopUpService topUpService;
 
     @GetMapping("/{walletId}")
-    WalletResponse get(@PathVariable String walletId, @AuthenticationPrincipal Jwt jwt) {
-        return WalletResponse.from(walletService.getOwned(walletId, jwt.getSubject()));
+    ResponseEntity<WalletResponse> get(@PathVariable String walletId,
+                                       @AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok(WalletResponse.from(walletService.getOwned(walletId, jwt.getSubject())));
     }
 
     @PostMapping
@@ -62,8 +63,9 @@ public class WalletController {
     }
 
     @GetMapping("/{walletId}/top-ups/{topUpId}")
-    TopUpResponse getTopUp(@PathVariable String walletId, @PathVariable String topUpId,
-                           @AuthenticationPrincipal Jwt jwt) {
-        return TopUpResponse.from(topUpService.getTopUp(walletId, topUpId, jwt.getSubject()));
+    ResponseEntity<TopUpResponse> getTopUp(@PathVariable String walletId,
+                                           @PathVariable String topUpId,
+                                           @AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok(TopUpResponse.from(topUpService.getTopUp(walletId, topUpId, jwt.getSubject())));
     }
 }

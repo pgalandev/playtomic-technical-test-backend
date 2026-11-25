@@ -13,8 +13,8 @@ import com.playtomic.tests.wallet.domain.exception.TopUpNotFoundException;
 import com.playtomic.tests.wallet.domain.external.stripe.Payment;
 import com.playtomic.tests.wallet.service.TopUpService;
 import com.playtomic.tests.wallet.service.WalletService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,32 +22,19 @@ import java.time.Clock;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class TopUpServiceImpl implements TopUpService {
 
     private final WalletService walletService;
     private final TransactionDAO transactionDAO;
     private final StripeRestClient stripeRestClient;
     private final Clock clock;
-    private final BigDecimal minAmount;
-
-    public TopUpServiceImpl(WalletService walletService, TransactionDAO transactionDAO,
-                            StripeRestClient stripeRestClient, Clock clock,
-                            @Value("${wallet.top-up.min-amount:10.00}") BigDecimal minAmount) {
-        this.walletService = walletService;
-        this.transactionDAO = transactionDAO;
-        this.stripeRestClient = stripeRestClient;
-        this.clock = clock;
-        this.minAmount = minAmount;
-    }
 
     @Override
     public Transaction topUp(String walletId, String userId, String idempotencyKey, BigDecimal amount,
                              String creditCardNumber) {
         log.info("Top up request received for walletId: {}, userId: {}, amount: {}, creditCardNumber: XXX-{}", walletId, userId, amount, last4(creditCardNumber));
         Wallet wallet = walletService.getOwned(walletId, userId);
-        if (amount.compareTo(minAmount) < 0) {
-            throw new AmountTooSmallException("amount must be at least " + minAmount.toPlainString());
-        }
         Transaction pending = transactionDAO.insert(Transaction.pendingTopUp(
                 wallet.getId(), userId, amount, wallet.getCurrency(), idempotencyKey,
                 last4(creditCardNumber), clock.instant()));
